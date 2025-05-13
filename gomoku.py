@@ -35,11 +35,11 @@ class GomokuGame:
                 if self.board[y][x] != 0:
                     player = self.board[y][x]
                     for dx, dy in directions:
-                        if self.count_stones(x, y, dx, dy, player) >= 5:
+                        if self.count_balls(x, y, dx, dy, player) >= 5:
                             return True
         return False
 
-    def count_stones(self, x, y, dx, dy, player):
+    def count_balls(self, x, y, dx, dy, player):
         count = 0
         for i in range(5):
             nx, ny = x + dx * i, y + dy * i
