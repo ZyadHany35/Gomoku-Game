@@ -1,9 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 from gomoku import GomokuGame
-from minmax import get_best_move_minimax
-from alphabeta import get_best_move_alphabeta
 from utils import *
+from AIPlayer import *
 
 BOARD_SIZE = 15
 CELL_SIZE = 40
@@ -13,10 +12,10 @@ class GomokuBoard:
     def __init__(self, root):
         self.root = root
         self.root.title("Gomoku Game")
-        
+
         label = tk.Label(root, text="Gomoku AI Game",font=("Helvetica", 20, "bold"))
         label.pack(padx=10)
-        
+
         self.canvas = tk.Canvas(root, width=BOARD_SIZE * CELL_SIZE, height=BOARD_SIZE * CELL_SIZE + 20,background="#d2a77c")
         self.canvas.pack()
         self.canvas.bind("<Button-1>", self.human_move)
@@ -24,13 +23,13 @@ class GomokuBoard:
         self.game = GomokuGame(BOARD_SIZE)
         self.human_turn = True
         self.ai_vs_ai_mode = False
-        
-   
+
+
         self.draw_board()
 
         self.bottom_frame = tk.Frame(root, padx=10, pady=10)
         self.bottom_frame.pack()
-        
+
         self.reset_btn = HoverButton(
             self.bottom_frame,
             text="Reset",
@@ -46,7 +45,7 @@ class GomokuBoard:
             activeforeground="black"
         )
         self.reset_btn.pack(side=tk.LEFT, padx=20)
-        
+
         self.ai_btn = HoverButton(
             self.bottom_frame,
             text="AI vs AI",
@@ -65,11 +64,11 @@ class GomokuBoard:
 
         self.canvas.bind("<Motion>", self.hover_highlight)
         self.highlight_id = None
-    
+
     def draw_board(self):
         self.canvas.delete("all")
         self.highlight_id = None
-        
+
         i = 0
         for i in range(BOARD_SIZE):
             self.canvas.create_line(i * CELL_SIZE + 20, 20, i * CELL_SIZE + 20, CELL_SIZE * (BOARD_SIZE - 1) + 20)
@@ -86,7 +85,7 @@ class GomokuBoard:
                     self.canvas.create_oval(
                         cx - r, cy - r,
                         cx + r, cy + r,
-                        fill=color
+                        fill = color
                     )
 
         self.canvas.create_line(
@@ -98,17 +97,17 @@ class GomokuBoard:
     def hover_highlight(self, event):
         if self.highlight_id:
             self.canvas.delete(self.highlight_id)
-        
+
         x, y = event.y // CELL_SIZE, event.x // CELL_SIZE
-        
-        if (0 <= x < BOARD_SIZE and 0 <= y < BOARD_SIZE and 
-            self.game.board[x][y] == 0 and 
+
+        if (0 <= x < BOARD_SIZE and 0 <= y < BOARD_SIZE and
+            self.game.board[x][y] == 0 and
             self.human_turn and not self.ai_vs_ai_mode):
-            
+
             cx = y * CELL_SIZE + CELL_SIZE // 2
             cy = x * CELL_SIZE + CELL_SIZE // 2
-            r = 10 
-            
+            r = 10
+
             self.highlight_id = self.canvas.create_oval(
                 cx - r, cy - r,
                 cx + r, cy + r,
@@ -119,7 +118,7 @@ class GomokuBoard:
 
     def human_move(self, event):
         if not self.human_turn or self.ai_vs_ai_mode:
-            return 
+            return
         x, y =  event.y // CELL_SIZE, event.x // CELL_SIZE
         if self.game.make_move(x, y):
 
@@ -141,7 +140,7 @@ class GomokuBoard:
                 return
         self.human_turn = True
 
-    
+
     def reset_game(self):
         self.game.reset()
         self.human_turn = True
