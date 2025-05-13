@@ -6,7 +6,7 @@ from AIPlayer import *
 
 BOARD_SIZE = 15
 CELL_SIZE = 40
-DEPTH = 2 # Adjust for difficulty
+DEPTH = 3 # Adjust for difficulty
 
 class GomokuBoard:
     def __init__(self, root):
