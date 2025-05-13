@@ -9,7 +9,6 @@ BOARD_SIZE = 15
 CELL_SIZE = 40
 DEPTH = 2 # Adjust for difficulty
 
-
 class GomokuBoard:
     def __init__(self, root):
         self.root = root

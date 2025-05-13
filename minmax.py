@@ -4,9 +4,9 @@ from gomoku import GomokuGame
 
 def minimax(game, depth, maximizingPlayer):
     if depth == 0 or game.check_win():
-        return game.evaluate() , None
+        return game.evaluate(game) , None
 
-    validMoves = game.valid_moves()
+    validMoves = game.get_valid_moves()
     if not validMoves:
         return 0 , None
 
@@ -38,6 +38,5 @@ def minimax(game, depth, maximizingPlayer):
         return eval , bestMove
 
 def get_best_move_minimax(game, depth):
-    """Returns a random valid move instead of using minimax algorithm"""
-    valid_moves = game.get_valid_moves()
-    return random.choice(valid_moves) if valid_moves else None
+    _ , bestMove = minimax(game, depth, True)
+    return bestMove
