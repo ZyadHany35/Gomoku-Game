@@ -6,7 +6,6 @@ from AIPlayer import *
 
 BOARD_SIZE = 15
 CELL_SIZE = 40
-DEPTH = 2 # Adjust for difficulty
 
 class GomokuBoard:
     def __init__(self, root):
@@ -20,12 +19,17 @@ class GomokuBoard:
         self.canvas.pack()
         self.canvas.bind("<Button-1>", self.human_move)
 
+
         self.game = GomokuGame(BOARD_SIZE)
         self.human_turn = True
         self.ai_vs_ai_mode = False
 
 
         self.draw_board()
+
+        self.algorithm_var = tk.IntVar(value=(1,"Minimax"))
+        self.create_algorithm_selector()
+        
 
         self.bottom_frame = tk.Frame(root, padx=10, pady=10)
         self.bottom_frame.pack()
@@ -65,6 +69,7 @@ class GomokuBoard:
         self.canvas.bind("<Motion>", self.hover_highlight)
         self.highlight_id = None
 
+
     def draw_board(self):
         self.canvas.delete("all")
         self.highlight_id = None
@@ -93,6 +98,45 @@ class GomokuBoard:
         BOARD_SIZE * CELL_SIZE, BOARD_SIZE * CELL_SIZE + 20,
         fill="black",
         width=4)
+
+    def create_algorithm_selector(self):
+        selector_frame = tk.Frame(self.root)
+        selector_frame.pack(pady=10)
+
+        self.algorithm_var = tk.StringVar(value="Minimax")
+        tk.Label(selector_frame, text="AI Algorithm:").pack(side=tk.LEFT, padx=5)
+
+        algo_menu = tk.OptionMenu(
+            selector_frame,
+            self.algorithm_var,
+            "Minimax",
+            "AlphaBeta"
+        )
+        algo_menu.pack(side=tk.LEFT, padx=10)
+        algo_menu.config(
+            font=("Helvetica", 12, "bold"),
+            bg="#7CA7D2",
+            relief=tk.RAISED,
+            width=10
+        )
+
+        self.difficulty_var = tk.StringVar(value="Easy")
+        tk.Label(selector_frame, text="Difficulty:").pack(side=tk.LEFT, padx=5)
+
+        diff_menu = tk.OptionMenu(
+            selector_frame,
+            self.difficulty_var,
+            "Easy",
+            "Hard"
+        )
+        diff_menu.pack(side=tk.LEFT)
+        diff_menu.config(
+            font=("Helvetica", 12, "bold"),
+            bg="#7CA7D2",
+            relief=tk.RAISED,
+            width=10
+        )
+
 
     def hover_highlight(self, event):
         if self.highlight_id:
@@ -131,12 +175,18 @@ class GomokuBoard:
             self.root.after(500, self.ai_move)
 
     def ai_move(self):
-        move = get_best_move_minimax(self.game, DEPTH)
+        depth = 1 if self.difficulty_var.get() == "Easy" else 2
+        if self.algorithm_var.get() == "Minimax":
+            move = get_best_move_minimax(self.game, depth)
+        else:
+            move = get_best_move_alphabeta(self.game, depth)
+
         if move:
             self.game.make_move(*move)
             self.draw_board()
             if self.game.check_win():
-                messagebox.showinfo("Game Over", f"{'Black' if self.game.current_player == 2 else 'White'} wins!")
+                winner = 'Black' if self.game.current_player == 2 else 'White'
+                messagebox.showinfo("Game Over", f"{winner} wins!")
                 return
         self.human_turn = True
 
@@ -149,20 +199,20 @@ class GomokuBoard:
 
     def ai_vs_ai(self):
         self.ai_vs_ai_mode = True
-        self.run_ai_vs_ai()
-
-    def run_ai_vs_ai(self):
         if self.game.check_win():
             messagebox.showinfo("Game Over", f"{'Black' if self.game.current_player == 2 else 'White'} wins!")
             return
 
+        depth = 1 if self.difficulty_var.get() == "Easy" else 2
+
         if self.game.current_player == 1:
-            move = get_best_move_minimax(self.game, DEPTH)
+            move = get_best_move_minimax(self.game, depth)
         else:
-            move = get_best_move_alphabeta(self.game, DEPTH)
+            move = get_best_move_alphabeta(self.game, depth)
 
         if move:
             self.game.make_move(*move)
             self.draw_board()
 
-        self.root.after(500, self.run_ai_vs_ai)
+        self.root.after(500, self.ai_vs_ai)
+
