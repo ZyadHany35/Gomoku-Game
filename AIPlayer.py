@@ -4,12 +4,6 @@ class AIPlayer:
         self.algo = algo
         self.depth = depth
 
-    def get_move(self , board):
-        if self.algo == "minimax":
-            return self.minmax(board , self.depth , True)[1]
-        elif self.algo == "alpha-beta":
-            return self.alphabeta(board , self.depth, -float('inf') , float('inf') , True)[1]
-
     def minmax(self , game , depth , maximizingPlayer):
         if depth == 0 or game.check_win():
             return game.evaluate(self.player), None
