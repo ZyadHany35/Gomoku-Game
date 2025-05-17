@@ -6,27 +6,45 @@ from AIPlayer import *
 
 BOARD_SIZE = 15
 CELL_SIZE = 40
-DEPTH = 2 # Adjust for difficulty
 
 class GomokuBoard:
     def __init__(self, root):
         self.root = root
         self.root.title("Gomoku Game")
-
+        # title
         label = tk.Label(root, text="Gomoku AI Game",font=("Helvetica", 20, "bold"))
         label.pack(padx=10)
 
+        # board
         self.canvas = tk.Canvas(root, width=BOARD_SIZE * CELL_SIZE, height=BOARD_SIZE * CELL_SIZE + 20,background="#d2a77c")
         self.canvas.pack()
         self.canvas.bind("<Button-1>", self.human_move)
+
 
         self.game = GomokuGame(BOARD_SIZE)
         self.human_turn = True
         self.ai_vs_ai_mode = False
 
-
         self.draw_board()
 
+        # turns
+        self.turn_frame = tk.Frame(root, borderwidth=2, relief="groove", pady=5)
+        self.turn_frame.pack(pady=(5, 0))
+
+        self.turn_label = tk.Label(
+            self.turn_frame,
+            text="Turn: Human",
+            font=("Helvetica", 14, "bold"),
+            fg="black"
+        )
+        self.turn_label.pack()
+
+
+        # dropout 
+        self.algorithm_var = tk.IntVar(value=(1,"Minimax"))
+        self.create_algorithm_selector()
+        
+        # buttons
         self.bottom_frame = tk.Frame(root, padx=10, pady=10)
         self.bottom_frame.pack()
 
@@ -48,7 +66,7 @@ class GomokuBoard:
 
         self.ai_btn = HoverButton(
             self.bottom_frame,
-            text="AI vs AI",
+            text="MiniMax vs Alphabeta",
             command=self.ai_vs_ai,
             bg="#7CA7D2",
             fg="black",
@@ -64,6 +82,18 @@ class GomokuBoard:
 
         self.canvas.bind("<Motion>", self.hover_highlight)
         self.highlight_id = None
+
+    def update_turn_label(self):
+        if self.ai_vs_ai_mode:
+            algo = self.algorithm_var.get()
+            ai_player = "Minimax" if self.game.current_player == 1 else "AlphaBeta"
+            self.turn_label.config(text=f"Turn: {ai_player}")
+        else:
+            if self.human_turn:
+                self.turn_label.config(text="Turn: Human")
+            else:
+                algo = self.algorithm_var.get()
+                self.turn_label.config(text=f"Turn: {algo}")
 
     def draw_board(self):
         self.canvas.delete("all")
@@ -89,10 +119,51 @@ class GomokuBoard:
                     )
 
         self.canvas.create_line(
-        0, BOARD_SIZE * CELL_SIZE + 20,
-        BOARD_SIZE * CELL_SIZE, BOARD_SIZE * CELL_SIZE + 20,
-        fill="black",
-        width=4)
+            0, BOARD_SIZE * CELL_SIZE + 20,
+            BOARD_SIZE * CELL_SIZE, BOARD_SIZE * CELL_SIZE + 20,
+            fill="black",
+            width=4)
+
+
+
+    def create_algorithm_selector(self):
+        selector_frame = tk.Frame(self.root)
+        selector_frame.pack(pady=10)
+
+        self.algorithm_var = tk.StringVar(value="Minimax")
+        tk.Label(selector_frame, text="AI Algorithm:", font=("Helvetica", 10, "bold")).pack(side=tk.LEFT, padx=5)
+
+        algo_menu = tk.OptionMenu(
+            selector_frame,
+            self.algorithm_var,
+            "Minimax",
+            "AlphaBeta"
+        )
+        algo_menu.pack(side=tk.LEFT, padx=10)
+        algo_menu.config(
+            font=("Helvetica", 12, "bold"),
+            bg="#7CA7D2",
+            relief=tk.RAISED,
+            width=10
+        )
+
+        self.difficulty_var = tk.StringVar(value="Easy")
+        tk.Label(selector_frame, text="Difficulty:", font=("Helvetica", 10, "bold")).pack(side=tk.LEFT, padx=5)
+
+        diff_menu = tk.OptionMenu(
+            selector_frame,
+            self.difficulty_var,
+            "Easy",
+            "Hard"
+        )
+        diff_menu.pack(side=tk.LEFT)
+        diff_menu.config(
+            font=("Helvetica", 12, "bold"),
+            bg="#7CA7D2",
+            relief=tk.RAISED,
+            width=10
+        )
+
 
     def hover_highlight(self, event):
         if self.highlight_id:
@@ -124,45 +195,54 @@ class GomokuBoard:
 
             self.draw_board()
             if self.game.check_win():
-                messagebox.showinfo("Game Over", f"{'Black' if self.game.current_player == 2 else 'White'} wins!")
+                messagebox.showinfo("Game Over", f"{'Black (human)' if self.game.current_player == 2 else 'White (ai)'} wins!")
                 self.human_turn = False
                 return
             self.human_turn = False
+            self.update_turn_label()
             self.root.after(500, self.ai_move)
 
     def ai_move(self):
-        move = get_best_move_minimax(self.game, DEPTH)
+        depth = 1 if self.difficulty_var.get() == "Easy" else 2
+        if self.algorithm_var.get() == "Minimax":
+            move = get_best_move_minimax(self.game, depth)
+        else:
+            move = get_best_move_alphabeta(self.game, depth)
+
         if move:
             self.game.make_move(*move)
             self.draw_board()
             if self.game.check_win():
-                messagebox.showinfo("Game Over", f"{'Black' if self.game.current_player == 2 else 'White'} wins!")
+                messagebox.showinfo("Game Over", f"{'Black (human)' if self.game.current_player == 2 else 'White (ai)'} wins!")
                 return
         self.human_turn = True
+        self.update_turn_label()
 
 
     def reset_game(self):
         self.game.reset()
         self.human_turn = True
         self.ai_vs_ai_mode = False
+        self.update_turn_label()
         self.draw_board()
 
     def ai_vs_ai(self):
         self.ai_vs_ai_mode = True
-        self.run_ai_vs_ai()
-
-    def run_ai_vs_ai(self):
         if self.game.check_win():
-            messagebox.showinfo("Game Over", f"{'Black' if self.game.current_player == 2 else 'White'} wins!")
+            messagebox.showinfo("Game Over", f"{'Black (minimax)' if self.game.current_player == 2 else 'White (alphabeta)'} wins!")
             return
 
+        depth = 1 if self.difficulty_var.get() == "Easy" else 2
+
         if self.game.current_player == 1:
-            move = get_best_move_minimax(self.game, DEPTH)
+            move = get_best_move_minimax(self.game, depth)
         else:
-            move = get_best_move_alphabeta(self.game, DEPTH)
+            move = get_best_move_alphabeta(self.game, depth)
 
         if move:
             self.game.make_move(*move)
             self.draw_board()
 
-        self.root.after(500, self.run_ai_vs_ai)
+        self.update_turn_label()
+        self.root.after(500, self.ai_vs_ai)
+
