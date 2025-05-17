@@ -57,7 +57,7 @@ class GomokuGame:
 
     def evaluate_player(self, player):
         score = 0
-        directions = [(1, 0), (0, 1), (1, 1), (-1, -1)]
+        directions = [(1, 0), (0, 1), (1, 1), (-1, 1)]
 
         for y in range(self.size):
             for x in range(self.size):
@@ -65,24 +65,24 @@ class GomokuGame:
                     continue
                 for dx, dy in directions:
                     length, open_ends = self.count_seq(x, y, dx, dy, player)
-                    if length >= 5:
-                        score += 100000  # Win
+                    if length == 5:
+                        score += 1000000
                     elif length == 4 and open_ends == 2:
-                        score += 10000  # Open four
+                        score += 500000
                     elif length == 4 and open_ends == 1:
-                        score += 5000  # Closed four
+                        score += 250000
                     elif length == 3 and open_ends == 2:
-                        score += 2500  # Open three
+                        score += 125000
                     elif length == 3 and open_ends == 1:
-                        score += 1250
+                        score += 62500
                     elif length == 2 and open_ends == 2:
-                        score += 625
+                        score += 31250
                     elif length == 2 and open_ends == 1:
-                        score += 300
+                        score += 15625
                     elif length == 1 and open_ends == 2:
-                        score += 150
+                        score += 7812
                     elif length == 1 and open_ends == 1:
-                        score += 100
+                        score += 3906
         return score
 
     def count_seq(self, x, y, dx, dy, player):
